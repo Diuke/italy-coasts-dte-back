@@ -1,0 +1,5 @@
+Requirement already satisfied: django-filter in e:\thesis\italycoastdte_back\.venv\lib\site-packages (2.4.0)
+Requirement already satisfied: Django>=2.2 in e:\thesis\italycoastdte_back\.venv\lib\site-packages (from django-filter) (3.2.5)
+Requirement already satisfied: sqlparse>=0.2.2 in e:\thesis\italycoastdte_back\.venv\lib\site-packages (from Django>=2.2->django-filter) (0.4.1)
+Requirement already satisfied: asgiref<4,>=3.3.2 in e:\thesis\italycoastdte_back\.venv\lib\site-packages (from Django>=2.2->django-filter) (3.4.1)
+Requirement already satisfied: pytz in e:\thesis\italycoastdte_back\.venv\lib\site-packages (from Django>=2.2->django-filter) (2021.1)
