@@ -32,7 +32,7 @@ class Layer(models.Model):
 
     service_url = models.TextField(null=True)
     metadata_url = models.TextField(null=True)
-    leyend_url = models.TextField(null=True)
+    legend_url = models.TextField(null=True) 
     more_data_url = models.TextField(null=True)
     copyright = models.TextField(null=True)
 

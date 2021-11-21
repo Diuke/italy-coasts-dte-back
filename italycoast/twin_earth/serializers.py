@@ -25,7 +25,7 @@ class LayerSerializer(serializers.Serializer):
     source = serializers.CharField()
     service_url = serializers.CharField()
     metadata_url = serializers.CharField()
-    leyend_url = serializers.CharField()
+    legend_url = serializers.CharField()
     more_data_url = serializers.CharField()
     copyright = serializers.CharField()
 
