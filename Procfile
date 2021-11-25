@@ -1,1 +1,1 @@
-web: gunicorn italycoast.italycoast.wsgi:application 
+web: gunicorn --chdir italycoast italycoast.wsgi:application
