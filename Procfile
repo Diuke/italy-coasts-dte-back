@@ -1,1 +1,1 @@
-web: gunicorn italycoast.wsgi
+web: gunicorn italycoast/italycoast.wsgi
