@@ -11,10 +11,7 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 import os
 from django.core.wsgi import get_wsgi_application
-
 import django_heroku
-# Activate Django-Heroku.
-django_heroku.settings(locals())
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 #BASE_DIR = Path(__file__).resolve().parent.parent
@@ -81,7 +78,6 @@ TEMPLATES = [
 #WSGI_APPLICATION = 'italycoast.wsgi.application'
 application = get_wsgi_application()
 
-
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
@@ -109,7 +105,6 @@ DATABASES = {
        'PORT': '5432'
    }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
@@ -152,14 +147,15 @@ DATE_INPUT_FORMATS = [
     '%d-%m-%Y'
 ]
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR = os.path.dirname(os.path.dirname(__file__))
+PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/1.9/howto/static-files/
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_ROOT = os.path.join(PROJECT_ROOT, 'staticfiles')
 STATIC_URL = '/static/'
 
-PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+STATICFILES_DIRS = (
+    os.path.join(PROJECT_ROOT, 'static'),
+)
 
 
 # Default primary key field type
@@ -169,3 +165,5 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ALLOW_ALL_ORIGINS = True
 
+# Activate Django-Heroku.
+django_heroku.settings(locals())
