@@ -12,6 +12,11 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 import os
 from django.core.wsgi import get_wsgi_application
 import django_heroku
+import dj_database_url
+import environ
+
+#env = environ.Env()
+#environ.Env.read_env()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 #BASE_DIR = Path(__file__).resolve().parent.parent
@@ -75,15 +80,12 @@ TEMPLATES = [
     },
 ]
 
-#WSGI_APPLICATION = 'italycoast.wsgi.application'
-application = get_wsgi_application()
-
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
 
 #Local
-#DATABASES = {
+# DATABASES = {
 #    'default': {
 #        'ENGINE': 'django.db.backends.postgresql_psycopg2',
 #        'NAME': 'italycoast',
@@ -92,19 +94,22 @@ application = get_wsgi_application()
 #        'HOST': 'localhost',
 #        'PORT': '5432'
 #    }
-#}
+# }
 
 #Cloud
+# DATABASES = {
+#    'default': {
+#        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+#        'NAME': 'd2bbihm2h7rifg',
+#        'USER': 'kzjwitkumojxhv',
+#        'PASSWORD': 'fd4185a64657319eecd522e18b7111e398cd9b84de65f9033f533856294bf612',
+#        'HOST': 'ec2-99-81-197-185.eu-west-1.compute.amazonaws.com',
+#        'PORT': '5432'
+#    }
+# }
 DATABASES = {
-   'default': {
-       'ENGINE': 'django.db.backends.postgresql_psycopg2',
-       'NAME': 'd2bbihm2h7rifg',
-       'USER': 'kzjwitkumojxhv',
-       'PASSWORD': 'fd4185a64657319eecd522e18b7111e398cd9b84de65f9033f533856294bf612',
-       'HOST': 'ec2-99-81-197-185.eu-west-1.compute.amazonaws.com',
-       'PORT': '5432'
-   }
-}
+    'default': dj_database_url.config()     
+} 
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
@@ -163,3 +168,6 @@ CORS_ALLOW_ALL_ORIGINS = True
 
 # Activate Django-Heroku.
 django_heroku.settings(locals())
+
+#WSGI_APPLICATION = 'italycoast.wsgi.application'
+application = get_wsgi_application()
