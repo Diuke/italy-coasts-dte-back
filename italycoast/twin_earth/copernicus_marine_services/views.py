@@ -8,9 +8,7 @@ from twin_earth.copernicus_marine_services import utils as copernicus_utils
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework import status as http_status
-from django.db.models import Q
 from rest_framework.response import Response
-from django.shortcuts import render
 from twin_earth import models as dte_models
 from twin_earth import serializers as dte_serializers
 
@@ -151,3 +149,32 @@ def get_list_of_parameter_values(request, layer_id, parameter):
         params[param_object["name"]] = param_object
 
     return Response(param_object, http_status.HTTP_200_OK)
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def get_data(request):
+    
+    data = request.data
+    layer_id = data.get('layer_id')
+    url = data.get('request_url')   
+
+    layer = dte_models.Layer.objects.all().get(pk=layer_id)
+    print(layer)
+    if not layer:
+        return Response(http_status.HTTP_404_NOT_FOUND)
+
+    if layer.source == 'Copernicus Marine Services':
+        print(url)
+        xml_Query = requests.get(url)
+        xml_text = xml_Query.text
+        xml = ET.fromstring(xml_text)
+        resp_body = dict()
+        feature_info = xml.find(f"FeatureInfo/value")
+        print(feature_info)
+        print(feature_info.text)
+        resp_body['value'] = feature_info.text
+        resp_body['units'] = layer.units
+        return Response(resp_body, http_status.HTTP_200_OK)
+        
+    else:
+        return Response(http_status.HTTP_400_BAD_REQUEST)

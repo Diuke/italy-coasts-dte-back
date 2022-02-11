@@ -10,23 +10,24 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 import os
-from django.core.wsgi import get_wsgi_application
-import django_heroku
-import dj_database_url
 import environ
+from pathlib import Path
+from django.core.wsgi import get_wsgi_application
+import django_on_heroku
+import dj_database_url
 
-#env = environ.Env()
-#environ.Env.read_env()
+env = environ.Env()
+environ.Env.read_env()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-#BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-n5-4yu(+)(_com!7a^jxnvtpg0v-$%h-@^dpx9u^6uxefx*r5&'
+SECRET_KEY = env("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -45,6 +46,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'rest_framework',
+    'django_extensions',
     'corsheaders',
 
     'auth_app',
@@ -108,7 +110,7 @@ TEMPLATES = [
 #    }
 # }
 DATABASES = {
-    'default': dj_database_url.config()     
+    'default': dj_database_url.config(),    
 } 
 
 # Password validation
@@ -167,7 +169,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ALLOW_ALL_ORIGINS = True
 
 # Activate Django-Heroku.
-django_heroku.settings(locals())
+django_on_heroku.settings(locals())
 
 #WSGI_APPLICATION = 'italycoast.wsgi.application'
 application = get_wsgi_application()
