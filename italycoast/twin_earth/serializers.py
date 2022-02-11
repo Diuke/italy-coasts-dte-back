@@ -28,6 +28,8 @@ class LayerSerializer(serializers.Serializer):
     legend_url = serializers.CharField()
     more_data_url = serializers.CharField()
     copyright = serializers.CharField()
+    units = serializers.CharField()
+    enabled = serializers.BooleanField()
 
     class Meta:
         model = dte_models.Layer

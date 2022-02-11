@@ -19,16 +19,21 @@ class Layer(models.Model):
         WFS = 'WFS', _('WFS')
         WMS = 'WMS', _('WMS')
         WMST = 'WMST', _('WMST')
+        ARCGIS_ImageServer = 'ARCGIS_IS', _('ArcGIS ImageServer')
+        ARCGIS_MapServer = 'ARCGIS_MS', _('ArcGIS MapServer')
 
     source = models.TextField(null=True)
     layer_name = models.CharField(max_length=256, null=True)
     readable_name = models.CharField(max_length=256, default="")
     description = models.TextField(default="")
-    keywords = models.TextField(default="") # Comma separated keywords
+    keywords = models.TextField(default="", blank=True, null=True) # Comma separated keywords
     type = models.CharField(max_length=256, choices=LayerType.choices)
     parameters = models.TextField(default="", blank=True) # Comma separated parameters of the layer
     category = models.ForeignKey(Category, null=True, on_delete=models.PROTECT, related_name="layers")
     frequency = models.CharField(max_length=256, blank=True, null=True, default="") #monthly, daily, hourly
+    units = models.CharField(max_length=100, blank=True, null=True, default="")
+
+    enabled = models.BooleanField(default=True)
 
     service_url = models.TextField(null=True)
     metadata_url = models.TextField(null=True)

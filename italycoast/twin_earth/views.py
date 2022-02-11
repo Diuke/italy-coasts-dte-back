@@ -1,27 +1,29 @@
 import datetime
+import requests
 
+import xml.etree.ElementTree as ET
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.db.models import Q
 from rest_framework.response import Response
-from django.shortcuts import render
 from twin_earth import models as dte_models
 from twin_earth import serializers as dte_serializers
 from twin_earth.copernicus_marine_services import utils as dte_utils
+from rest_framework import status as http_status
 
 # Create your views here.
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def wfs_layers(request):
-    layers = dte_models.Layer.objects.filter(type=dte_models.Layer.LayerType.WFS.name)
+    layers = dte_models.Layer.objects.filter(type=dte_models.Layer.LayerType.WFS.name, enabled=True)
     serializer = dte_serializers.LayerSerializer(layers, many=True)
     return Response(serializer.data)
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def wms_layers(request):
-    layers = dte_models.Layer.objects.filter(type=dte_models.Layer.LayerType.WMS.name)
+    layers = dte_models.Layer.objects.filter(type=dte_models.Layer.LayerType.WMS.name, enabled=True)
     serializer = dte_serializers.LayerSerializer(layers, many=True)
     return Response(serializer.data)
 
@@ -53,7 +55,6 @@ def categories_hierarchy(request):
         
         start_filter_date = datetime.date(int(start_filter_date_split[0]), int(start_filter_date_split[1]), int(start_filter_date_split[2]))
         end_filter_date = datetime.date(int(end_filter_date_split[0]), int(end_filter_date_split[1]), int(end_filter_date_split[2]))
-        print(start_filter_date, end_filter_date)
 
         #initial_time_range, final_time_range
         layer_group_list = dte_models.Layer.objects.all().filter(
@@ -63,6 +64,7 @@ def categories_hierarchy(request):
             (Q(initial_time_range__lte=end_filter_date) & Q(final_time_range=None)) |
             (Q(initial_time_range=None) & Q(final_time_range=None))
         )
+        layer_group_list = layer_group_list.filter(enabled=True)
         layers_serialized = dte_serializers.LayerSerializer(layer_group_list, many=True).data
         categories_list = dte_models.Category.objects.all()
         categories_serialized = dte_serializers.BasicCategorySerializer(categories_list, many=True).data

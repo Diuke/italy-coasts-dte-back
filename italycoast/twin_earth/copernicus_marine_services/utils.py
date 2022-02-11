@@ -4,7 +4,6 @@ import xml.etree.ElementTree as ET
 import twin_earth.models as dte_models
 
 def update_layers(wms_list):
-    
     # wms list is a list of wms urls
     for url in wms_list:
         try:
