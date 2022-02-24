@@ -33,12 +33,19 @@ def get_data(request):
     }
 
     xml_Query = requests.get(url)
+    worldpop_version = xml_Query.headers.get("QUERY_LAYERS")
     xml_text = xml_Query.text
     xml = ET.fromstring(xml_text)
     print(xml)
     resp_body = dict()
+    if "ppp_2015" in url: worldpop_version = "ppp_2015"
+    elif "ppp_2016" in url: worldpop_version = "ppp_2016"
+    elif "ppp_2017" in url: worldpop_version = "ppp_2017"
+    elif "ppp_2018" in url: worldpop_version = "ppp_2018"
+    elif "ppp_2019" in url: worldpop_version = "ppp_2019"
+    elif "ppp_2020" in url: worldpop_version = "ppp_2020"
 
-    feature_info = xml.find(f"gml:featureMember/wpGlobal:ppp_2020/wpGlobal:People_Per_Pixel", namespaces=namespaces)
+    feature_info = xml.find(f"gml:featureMember/wpGlobal:" + str(worldpop_version) + "/wpGlobal:People_Per_Pixel", namespaces=namespaces)
     print(feature_info)
     print(feature_info.text)
     resp_body['value'] = feature_info.text
