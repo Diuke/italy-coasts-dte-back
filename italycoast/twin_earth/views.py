@@ -65,6 +65,7 @@ def categories_hierarchy(request):
             (Q(initial_time_range=None) & Q(final_time_range=None))
         )
         layer_group_list = layer_group_list.filter(enabled=True)
+        layer_group_list = layer_group_list.order_by("readable_name")
         layers_serialized = dte_serializers.LayerSerializer(layer_group_list, many=True).data
         categories_list = dte_models.Category.objects.all()
         categories_serialized = dte_serializers.BasicCategorySerializer(categories_list, many=True).data
