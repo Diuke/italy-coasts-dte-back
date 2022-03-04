@@ -159,19 +159,15 @@ def get_data(request):
     url = data.get('request_url')   
 
     layer = dte_models.Layer.objects.all().get(pk=layer_id)
-    print(layer)
     if not layer:
         return Response(http_status.HTTP_404_NOT_FOUND)
 
     if layer.source == 'Copernicus Marine Services':
-        print(url)
         xml_Query = requests.get(url)
         xml_text = xml_Query.text
         xml = ET.fromstring(xml_text)
         resp_body = dict()
         feature_info = xml.find(f"FeatureInfo/value")
-        print(feature_info)
-        print(feature_info.text)
         resp_body['value'] = feature_info.text
         resp_body['units'] = layer.units
         return Response(resp_body, http_status.HTTP_200_OK)
