@@ -29,8 +29,6 @@ def update_layers(wms_list):
             elif "SST_MED_SST" in url or "METEOFRANCE-EUR-SST-L4-NRT-OBS_FULL_TIME_SERIE" in url:
                 category = dte_models.Category.objects.all().get(name="Sea Temperature")
 
-            print(category)
-
             xml_GetCapabilities = requests.get(complete_url)
             xml_text = xml_GetCapabilities.text
             xml = ET.fromstring(xml_text)
@@ -84,8 +82,6 @@ def update_layers(wms_list):
                             start_time = first[0]
                             end_time = last[0]
                         except Exception as ex:
-                            print(time_list[0])
-                            print(time_list[len(time_list)-1])
                             print(ex)
                 
                 if len(parameters) > 0: 
@@ -135,12 +131,10 @@ def update_layers(wms_list):
                     db_layer.initial_time_range = start_time
                     db_layer.final_time_range = end_time
 
-                print(url)
                 db_layer.save()
             xml = None
         except Exception as ex:
             print(ex)
-            print(url)
             
 
 def format_time_intervals(time_list):

@@ -25,10 +25,8 @@ def get_data(request):
         return Response(http_status.HTTP_404_NOT_FOUND)
     
     resp_body = {}
-    print(url)
     if layer.type == dte_models.Layer.LayerType.ARCGIS_ImageServer:
         json_response = requests.get(url).json()
-        print(json_response)
         if layer.layer_name == "HRL_BuiltUp_2018:IBU_MosaicSymbology":
             resp_body = {
                 "value": json_response["value"],
@@ -55,7 +53,6 @@ def get_data(request):
 
     elif layer.type == dte_models.Layer.LayerType.ARCGIS_MapServer:
         json_response = requests.get(url).json()
-        print(json_response)
         if layer.readable_name == "Imperviousness Density (IMD) 2015" or layer.readable_name == "Imperviousness Density (IMD) 2012" or layer.readable_name == "Imperviousness Density (IMD) 2009":
             resp_body = {
                 "value": json_response["results"][0]["attributes"]["Pixel Value"],
@@ -129,5 +126,4 @@ def get_data(request):
         else:
             resp_body = xml_Query
 
-    print(resp_body)
     return Response(resp_body, http_status.HTTP_200_OK)
