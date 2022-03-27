@@ -5,3 +5,4 @@ from twin_earth import models
 
 admin.site.register(models.Layer)
 admin.site.register(models.Category)
+admin.site.register(models.Scenario)
