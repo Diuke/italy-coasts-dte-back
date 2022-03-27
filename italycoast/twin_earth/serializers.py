@@ -47,3 +47,12 @@ class CategorySerializer(serializers.Serializer):
     class Meta:
         model = dte_models.Category
         fields = "__all__"
+
+class ScenarioSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    name = serializers.CharField()
+    scenario_json = serializers.JSONField()
+
+    class Meta:
+        model = dte_models.Scenario
+        fields = "__all__"
