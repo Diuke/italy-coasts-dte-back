@@ -1,5 +1,6 @@
 from django.utils.translation import gettext_lazy as _
 from django.db import models
+from django.conf import settings
 
 class Category(models.Model):
     name = models.CharField(max_length=256)
@@ -51,3 +52,16 @@ class Layer(models.Model):
         db_table = "layer"
         verbose_name = "Layer"
         verbose_name_plural = "Layers"
+
+class Scenario(models.Model):
+    name = models.CharField(max_length=256)
+    scenario_json = models.JSONField()
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="scenarios")
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        db_table = "scenario"
+        verbose_name = "Scenario"
+        verbose_name_plural = "Scenarios"

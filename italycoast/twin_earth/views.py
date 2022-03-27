@@ -6,6 +6,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.db.models import Q
 from rest_framework.response import Response
+import simplejson
 from twin_earth import models as dte_models
 from twin_earth import serializers as dte_serializers
 from twin_earth.copernicus_marine_services import utils as dte_utils
@@ -78,3 +79,39 @@ def categories_hierarchy(request):
                         category["layers"].append(layer)
 
     return Response(categories_serialized)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def create_scenario(request):
+    user = request.user
+    data = simplejson.loads(request.body)
+    print(request.POST)
+    json_string = data.get('scenario_json')
+    name = data.get('name')
+    scenario = dte_models.Scenario()
+    scenario.name = name
+    scenario.scenario_json = json_string
+    scenario.owner = user
+    scenario.save()
+    serialized = dte_serializers.ScenarioSerializer(scenario)
+    return Response(serialized.data)
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_scenario(request):
+    user = request.user
+    print(request.query_params)
+    scenario_id = request.query_params['id']
+    scenario = dte_models.Scenario.objects.get(pk=scenario_id)
+    scenario.delete()
+    return Response({"message": "Deleted"})
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def list_scenarios(request):
+    user = request.user
+    scenarios = user.scenarios.all()
+    serialized = dte_serializers.ScenarioSerializer(scenarios, many=True)
+    print(scenarios)
+    return Response(serialized.data)
