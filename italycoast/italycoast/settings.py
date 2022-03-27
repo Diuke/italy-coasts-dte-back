@@ -174,9 +174,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ALLOW_ALL_ORIGINS = True
 
-GDAL_LIBRARY_PATH = r'C:\OSGeo4W\bin\gdal304'
-GEOS_LIBRARY_PATH = r'C:\OSGeo4W\bin\geos_c.dll'
-
 # Activate Django-Heroku.
 django_on_heroku.settings(locals())
 
