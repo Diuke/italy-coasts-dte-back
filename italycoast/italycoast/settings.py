@@ -87,30 +87,6 @@ TEMPLATES = [
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
-
-#Local
-# DATABASES = {
-#    'default': {
-#        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-#        'NAME': 'italycoast',
-#        'USER': 'italycoast',
-#        'PASSWORD': 'italycoast',
-#        'HOST': 'localhost',
-#        'PORT': '5432'
-#    }
-# }
-
-#Cloud
-# DATABASES = {
-#    'default': {
-#        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-#        'NAME': 'd2bbihm2h7rifg',
-#        'USER': 'kzjwitkumojxhv',
-#        'PASSWORD': 'fd4185a64657319eecd522e18b7111e398cd9b84de65f9033f533856294bf612',
-#        'HOST': 'ec2-99-81-197-185.eu-west-1.compute.amazonaws.com',
-#        'PORT': '5432'
-#    }
-# }
 DATABASES = {
     'default': dj_database_url.config(),    
 } 
@@ -173,9 +149,6 @@ STATIC_URL = '/static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ALLOW_ALL_ORIGINS = True
-
-#GDAL_LIBRARY_PATH = r'C:\OSGeo4W\bin\gdal304'
-#GEOS_LIBRARY_PATH = r'C:\OSGeo4W\bin\geos_c.dll'
 
 # Activate Django-Heroku.
 django_on_heroku.settings(locals())
