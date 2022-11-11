@@ -1,5 +1,4 @@
 import datetime
-import requests
 
 import xml.etree.ElementTree as ET
 from rest_framework.decorators import api_view, permission_classes
@@ -115,3 +114,4 @@ def list_scenarios(request):
     serialized = dte_serializers.ScenarioSerializer(scenarios, many=True)
     print(scenarios)
     return Response(serialized.data)
+

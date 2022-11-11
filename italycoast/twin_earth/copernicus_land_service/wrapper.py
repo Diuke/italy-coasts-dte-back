@@ -1,28 +1,12 @@
-import datetime
-from os import name
 import requests
 import xml.etree.ElementTree as ET
 
-from twin_earth.copernicus_land_service import utils as copernicus_utils
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework import status as http_status
-from rest_framework.response import Response
+from twin_earth.copernicus_land_service import utils as clms_utils
 from twin_earth import models as dte_models
-from twin_earth import serializers as dte_serializers
 
-@api_view(['POST'])
-@permission_classes([AllowAny])
-def get_data(request):
-    
-    data = request.data
-    layer_id = data.get('layer_id')
-    url = data.get('request_url')   
-
-    layer = dte_models.Layer.objects.all().get(pk=layer_id)
-    
-    if not layer:
-        return Response(http_status.HTTP_404_NOT_FOUND)
+def get_data(layer, params):
+    url = clms_utils.build_copernicus_land_service_url(layer, params)
+    print(url)
     
     resp_body = {}
     if layer.type == dte_models.Layer.LayerType.ARCGIS_ImageServer:
@@ -30,18 +14,18 @@ def get_data(request):
         if layer.layer_name == "HRL_BuiltUp_2018:IBU_MosaicSymbology":
             resp_body = {
                 "value": json_response["value"],
-                "units": copernicus_utils.built_up_categories()[int(json_response["value"])]
+                "units": clms_utils.built_up_categories()[int(json_response["value"])]
             }
         elif layer.layer_name == "HRL_ForestType_2018:FTY_MosaicSymbology":
             resp_body = {
                 "value": json_response["value"],
-                "units": copernicus_utils.forest_type_codes()[int(json_response["value"])]
+                "units": clms_utils.forest_type_codes()[int(json_response["value"])]
             }
 
         elif layer.layer_name == "HRL_WaterWetness_2018:WAW_MosaicSymbology":
             resp_body = {
                 "value": json_response["value"],
-                "units": copernicus_utils.waw_codes()[int(json_response["value"])]
+                "units": clms_utils.waw_codes()[int(json_response["value"])]
             }
 
         else: 
@@ -90,40 +74,41 @@ def get_data(request):
             feature_info = xml.find(f"esri_wms:FIELDS", namespaces=namespaces)
             code = feature_info.get("CODE_5_18")
             resp_body['value'] = code
-            resp_body['units'] = copernicus_utils.coastal_zones_codes()[int(code)]
+            resp_body['units'] = clms_utils.coastal_zones_codes()[int(code)]
 
         elif layer.layer_name == "Coastal_Zones_2018_raster65095":
             feature_info = xml.find(f"esri_wms:FIELDS", namespaces=namespaces)
             code = feature_info.get("PixelValue")
             resp_body['value'] = code
-            resp_body['units'] = copernicus_utils.coastal_zones_codes()[int(code)]
+            resp_body['units'] = clms_utils.coastal_zones_codes()[int(code)]
             
         elif layer.layer_name == "Coastal_Zones_2012_raster55645":
             feature_info = xml.find(f"esri_wms:FIELDS", namespaces=namespaces)
             code = feature_info.get("PixelValue")
             resp_body['value'] = code
-            resp_body['units'] = copernicus_utils.coastal_zones_codes()[int(code)]
+            resp_body['units'] = clms_utils.coastal_zones_codes()[int(code)]
 
         elif layer.layer_name == "Coastal_Zones_2012_vector53031":
             feature_info = xml.find(f"esri_wms:FIELDS", namespaces=namespaces)
             code = feature_info.get("CODE_5_12")
             resp_body['value'] = code
-            resp_body['units'] = copernicus_utils.coastal_zones_codes()[int(code)]
+            resp_body['units'] = clms_utils.coastal_zones_codes()[int(code)]
 
         elif layer.layer_name == "13": #CLC 2018 vector
             feature_info = xml.find(f"esri_wms:FIELDS", namespaces=namespaces)
             code = feature_info.get("Code_18")
             resp_body['value'] = code
-            resp_body['units'] = copernicus_utils.corine_land_cover_codes()[int(code)]
+            resp_body['units'] = clms_utils.corine_land_cover_codes()[int(code)]
 
         elif layer.layer_name == "12": #CLC 2018 raster
             feature_info = xml.find(f"esri_wms:FIELDS", namespaces=namespaces)
-            code = feature_info.get("CODE_18")
-            label = feature_info.get("LABEL3")
+            print(feature_info)
+            code = feature_info.get("Raster.CODE_18")
+            label = feature_info.get("Raster.LABEL3")
             resp_body['value'] = code
             resp_body['units'] = label
 
         else:
             resp_body = xml_Query
 
-    return Response(resp_body, http_status.HTTP_200_OK)
+    return resp_body

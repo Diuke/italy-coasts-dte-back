@@ -14,7 +14,6 @@ import os
 import environ
 from pathlib import Path
 from django.core.wsgi import get_wsgi_application
-import django_on_heroku
 import dj_database_url
 
 env = environ.Env()
@@ -112,8 +111,15 @@ TEMPLATES = [
 #    }
 # }
 DATABASES = {
-    'default': dj_database_url.config(),    
-} 
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'italycoast',
+        'USER': 'italycoast',
+        'PASSWORD': 'italycoast',
+        'HOST': 'localhost',
+        'PORT': '5432'
+    }
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
@@ -174,8 +180,4 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ALLOW_ALL_ORIGINS = True
 
-# Activate Django-Heroku.
-django_on_heroku.settings(locals())
-
-#WSGI_APPLICATION = 'italycoast.wsgi.application'
-application = get_wsgi_application()
+WSGI_APPLICATION = 'italycoast.wsgi.application'

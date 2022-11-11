@@ -1,20 +1,13 @@
-import datetime
-from os import name
-from urllib import response
-from django import utils
 import requests
 import xml.etree.ElementTree as ET
 import numpy as np
 import simplejson
 
-from twin_earth.copernicus_marine_services import utils as copernicus_utils
+from twin_earth.copernicus_marine_services import utils as cmems_utils
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework import status as http_status
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
-from twin_earth import models as dte_models
-from twin_earth import serializers as dte_serializers
-from django.contrib.gis.geos import GEOSGeometry, Polygon
+from django.contrib.gis.geos import GEOSGeometry
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
@@ -107,24 +100,8 @@ def update_layers(request):
         "https://nrt.cmems-du.eu/thredds/wms/SST_MED_SSTA_L4_NRT_OBSERVATIONS_010_004_d"
         
     ]
-    copernicus_utils.update_layers(wms_list)
+    cmems_utils.update_layers(wms_list)
     return Response(200)
-
-@api_view(['GET'])
-@permission_classes([AllowAny])
-def get_list_of_parameter_values(request, layer_id, parameter):
-    try:
-        layer = dte_models.Layer.objects.get(id=int(layer_id))
-    except Exception as ex:
-        return Response(http_status.HTTP_404_NOT_FOUND)
-
-    start_time = None
-    end_time = None
-    if request.GET.get("start_time") and request.GET.get("end_time"):
-        start_time = request.GET.get("start_time")
-        end_time = request.GET.get("end_time")
-    params = get_parameters(layer, parameter)
-    return Response(params, http_status.HTTP_200_OK)
 
 def get_parameters(layer, parameter):
     urlSuffix = "?request=GetCapabilities&service=WMS&VERSION=1.3.0&layer=" + layer.layer_name
@@ -140,8 +117,6 @@ def get_parameters(layer, parameter):
     #["WMS_Capabilities"]["Capability"][0]["Layer"][0]["Layer"][0]["Layer"][0]["Dimension"]
     parameter_values = xml.findall(f"opengis:Capability/opengis:Layer/opengis:Layer/opengis:Layer/opengis:Dimension[@name='{parameter}']", namespaces=namespaces)
     
-    params = dict()
-    
     param_object = {
         "default": parameter_values[0].get("default"),
         "units": parameter_values[0].get("units"),
@@ -149,53 +124,34 @@ def get_parameters(layer, parameter):
         "values": parameter_values[0].text.strip().split(",")
     }
     if param_object["name"] == "time":
-        complete_time_list = copernicus_utils.format_time_intervals(param_object["values"])
+        complete_time_list = cmems_utils.format_time_intervals(param_object["values"])
         param_object["values"] = complete_time_list
         param_object["values"].reverse()
     
     return param_object
 
 
-@api_view(['POST'])
-@permission_classes([AllowAny])
-def get_data(request):
-    
-    data = request.data
-    layer_id = data.get('layer_id')
-    url = data.get('request_url')   
+def get_data(layer, params):
+    url = cmems_utils.build_copernicus_marine_service_url(layer, params)
+    xml_Query = requests.get(url)
+    xml_text = xml_Query.text
+    xml = ET.fromstring(xml_text)
+    resp_body = dict()
+    feature_info = xml.find(f"FeatureInfo/value")
+    resp_body['value'] = feature_info.text
+    resp_body['units'] = layer.units
+    return resp_body
 
-    layer = dte_models.Layer.objects.all().get(pk=layer_id)
-    if not layer:
-        return Response(http_status.HTTP_404_NOT_FOUND)
+def get_time_series(layer, params):
+    #start time - end time
+    start_date = params.get('start_date')
+    end_date = params.get('end_date')
+    elevation = params.get('elevation')
+    bbox = params.get('bbox')
 
-    if layer.source == 'Copernicus Marine Services':
-        xml_Query = requests.get(url)
-        xml_text = xml_Query.text
-        xml = ET.fromstring(xml_text)
-        resp_body = dict()
-        feature_info = xml.find(f"FeatureInfo/value")
-        resp_body['value'] = feature_info.text
-        resp_body['units'] = layer.units
-        return Response(resp_body, http_status.HTTP_200_OK)
-        
-    else:
-        return Response(http_status.HTTP_400_BAD_REQUEST)
+    base_params = { "bbox": bbox }
+    base_url = cmems_utils.build_copernicus_marine_service_url(layer, base_params)
 
-@api_view(['POST'])
-@permission_classes([AllowAny])
-def get_time_series(request):
-    data = request.data
-    #start time - end time - elevation?
-    layer_id = data.get('layer_id')
-    start_date = data.get('start_date')
-    end_date = data.get('end_date')
-    elevation = data.get('elevation')
-    base_url = data.get('base_url')
-
-    layer = dte_models.Layer.objects.all().get(pk=layer_id)
-    times = get_parameters(layer, "time")
-
-    times_counter = 0
     resp_body = {
         "x": [],
         "y": [],
@@ -217,19 +173,16 @@ def get_time_series(request):
         resp_body['x'].append(feature_info_time)
         resp_body['y'].append(feature_info_value)
 
-    return Response(resp_body, http_status.HTTP_200_OK)
+    return resp_body
 
 
-@api_view(['POST'])
-@permission_classes([AllowAny])
-def get_depth_profile(request):
-    data = request.data
-    #start time - end time - elevation?
-    layer_id = data.get('layer_id')
-    time = data.get('time')
-    base_url = data.get('base_url')
+def get_depth_profile(layer, params):
+    time = params.get('time')
+    bbox = params.get('bbox')
 
-    layer = dte_models.Layer.objects.all().get(pk=layer_id)
+    base_params = { "bbox": bbox }
+    base_url = cmems_utils.build_copernicus_marine_service_url(layer, base_params)
+
     elevations = get_parameters(layer, "elevation")
 
     resp_body = {
@@ -254,22 +207,19 @@ def get_depth_profile(request):
             resp_body['y'].append(elevation)
             resp_body['x'].append(feature_info_value)            
 
-    return Response(resp_body, http_status.HTTP_200_OK)
+    return resp_body
 
 
-@api_view(['POST'])
-@permission_classes([AllowAny])
-def get_area_statistics(request):
-    data = request.data
+def get_area_statistics(layer, params):
     #default resolution
     x_resolution = 20
     y_resolution = 20
-    bbox_string = data.get("bbox")
+    bbox_string = params.get("bbox")
     bbox = bbox_string.split(",") # [min_x, min_y, max_x, max_y]
-    time = data.get("time")
-    histogram_classes = data.get("classes")
-    elevation = data.get("elevation")
-    polygon_geojson = simplejson.loads(data.get("polygon"))
+    time = params.get("time")
+    histogram_classes = params.get("classes")
+    elevation = params.get("elevation")
+    polygon_geojson = simplejson.loads(params.get("polygon"))
     polygon_geometry = polygon_geojson["features"][0]["geometry"]
     polygon_geometry["crs"] = {
         "type": "name",
@@ -277,15 +227,12 @@ def get_area_statistics(request):
             "name": "EPSG:3857"
         }
     }
+    
+    #Create a geometry to only request pixels where they intersect with the AOI
     geojson = simplejson.dumps(polygon_geometry)
     polygon_feature = GEOSGeometry(geojson)
-    
-    bbox_feature = Polygon.from_bbox(bbox)
 
-    layer_id = data.get('layer_id')
-    layer = dte_models.Layer.objects.all().get(pk=layer_id)
-
-    resolution = data.get("resolution")
+    resolution = params.get("resolution")
     if resolution == "high":
         x_resolution = 20
         y_resolution = 20
@@ -367,5 +314,5 @@ def get_area_statistics(request):
         "total_samples_with_value": cells_with_values
     }
     
-    return Response(resp, http_status.HTTP_200_OK)
+    return resp
             
