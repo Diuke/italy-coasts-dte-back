@@ -1,26 +1,47 @@
+from twin_earth.models import Layer
 
-def build_copernicus_land_service_url(layer, params):
+def build_copernicus_land_service_url(layer: Layer, params):
+
     base_url = layer.service_url
-    url = base_url + "?"
-    url += "SERVICE=WMS&"
-    url += "VERSION=1.3.0&"
-    url += "REQUEST=GetFeatureInfo&"
-    url += "FORMAT=image/png&"
-    url += "TRANSPARENT=true&"
-    url += "QUERY_LAYERS=" + layer.layer_name + "&"
-    url += "TILED=true&"
-    url += "LAYERS=" + layer.layer_name + "&"
-    url += "BBOX=" + params["bbox"] + "&"
-    url += "CRS=EPSG:3857&"
+    coordinates = params["bbox"].split(",") # " 'min_lat,min_lng,max_lat,max_lng' "
+    lat = coordinates[0]
+    lng = coordinates[1]
 
-     #add the dimensions if present
-    # dimensions are comma-separated
-    for p in layer.parameters.split(","):
-        if params.get(p):
-            url += str(p) + "=" + str(params[p]) + "&"     
-            
-    url += "INFO_FORMAT=text/xml&"
-    url += "I=0&J=0&WIDTH=1&HEIGHT=1&STYLES="
+    if layer.type == Layer.LayerType.ARCGIS_MapServer:
+        url = base_url + "/identify?"
+        url += 'geometry={"x": ' + lat + ',"y":' + lng + '}'
+        url += "&tolerance=1"
+        url += "&mapExtent=" + str(lat-1) + "," + str(lng-1) + "," + str(lat+1) + "," + str(lng+1)
+        url += "&imageDisplay=" + str(600) + "," + str(550) + ",96"
+        url += "&geometryType=esriGeometryPoint&returnGeometry=false&returnCatalogItems=false&returnPixelValues=true&processAsMultidimensional=false&maxItemCount=1&f=pjson"
+
+    elif layer.type == Layer.LayerType.ARCGIS_ImageServer:
+        url = base_url + "/identify?"
+        url += 'geometry={"x": ' + lat + ',"y":' + lng + '}'
+        url += "&geometryType=esriGeometryPoint&returnGeometry=false&returnCatalogItems=false&returnPixelValues=true&processAsMultidimensional=false&maxItemCount=1&f=pjson"
+
+    else:
+        url = base_url + "?"
+        url += "SERVICE=WMS&"
+        url += "VERSION=1.3.0&"
+        url += "REQUEST=GetFeatureInfo&"
+        url += "FORMAT=image/png&"
+        url += "TRANSPARENT=true&"
+        url += "QUERY_LAYERS=" + layer.layer_name + "&"
+        url += "TILED=true&"
+        url += "LAYERS=" + layer.layer_name + "&"
+        url += "BBOX=" + params["bbox"] + "&"
+        url += "CRS=EPSG:3857&"
+
+        #add the dimensions if present
+        # dimensions are comma-separated
+        for p in layer.parameters.split(","):
+            if params.get(p):
+                url += str(p) + "=" + str(params[p]) + "&"     
+                
+        url += "INFO_FORMAT=text/xml&"
+        url += "I=0&J=0&WIDTH=1&HEIGHT=1&STYLES="
+    
     return url
 
 def coastal_zones_codes():

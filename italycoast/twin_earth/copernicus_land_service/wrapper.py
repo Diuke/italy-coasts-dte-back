@@ -78,7 +78,7 @@ def get_data(layer, params):
 
         elif layer.layer_name == "Coastal_Zones_2018_raster65095":
             feature_info = xml.find(f"esri_wms:FIELDS", namespaces=namespaces)
-            code = feature_info.get("PixelValue")
+            code = feature_info.get("UniqueValue.PixelValue")
             resp_body['value'] = code
             resp_body['units'] = clms_utils.coastal_zones_codes()[int(code)]
             
