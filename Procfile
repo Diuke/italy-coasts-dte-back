@@ -1,1 +1,0 @@
-web: gunicorn --chdir italycoast italycoast.wsgi:application
